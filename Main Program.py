@@ -408,7 +408,7 @@ def draw_text(text, font, colour, x, y):
     text_image = font.render(text, True, colour) #Creates text image
     screen.blit(text_image, (x, y)) #Blits to screen
 
-def extras(isOrbitComplete, state, apogeeCoordinate, perigeeCoordinate, deltaV, iteration_timeWarp, vector_timeWarp, timePeriod):
+def extras(isOrbitComplete, state, apogeeCoordinate, perigeeCoordinate, deltaV, iteration_timeWarp, vector_timeWarp):
     #---------- PERIGEE AND APOGEE ----------
     perigee = int(numpy.floor(earthScale(numpy.linalg.norm(perigeeCoordinate))-6371))
     apogee = int(numpy.floor(earthScale(numpy.linalg.norm(apogeeCoordinate))-6371))
@@ -452,8 +452,6 @@ def extras(isOrbitComplete, state, apogeeCoordinate, perigeeCoordinate, deltaV, 
     #---------- TIME WARP ----------
     timeWarpDisplay = iteration_timeWarp * vector_timeWarp #Calculate total time warp
     draw_text(f"Time Warp: {timeWarpDisplay}x", font, BLACK, SCREENWIDTH-300, SCREENHEIGHT-60)
-
-    draw_text(f"Time Period: {timePeriod} hours", font, BLACK, SCREENWIDTH-300, 140)
 
 def valuesIcon(Coordinate, text, colour, flag, text2):
     radius = 6
@@ -588,38 +586,6 @@ while run:
         orthographicProjection("red", transformed_rocket, radius)
 
     #VALUES (CASE: Behind Earth)
-    
-    perigee = int(numpy.floor(earthScale(numpy.linalg.norm(perigeeCoordinate))-6371))
-    apogee = int(numpy.floor(earthScale(numpy.linalg.norm(apogeeCoordinate))-6371))
-    orbitalInclination = round(numpy.arccos(numpy.dot(orbitalPlane(state), numpy.array([0, 1, 0]))), 2) #Calculate orbital inclination
-    if orbitalInclination > pi/2:
-        orbitalInclination = round(orbitalInclination-pi, 2) #Inclination is in range 0 to pi, I want it in range -pi/2 to pi/2
-    mouseX, mouseY = pygame.mouse.get_pos()
-    APflag = False
-    PEflag = False
-    DNflag = False
-    ANflag = False
-
-    if numpy.linalg.norm(numpy.array([mouseX, mouseY]) - numpy.array([transformed_apogeeCoordinate[0]+SCREENWIDTH//2, transformed_apogeeCoordinate[1]+SCREENHEIGHT//2])) < 20:
-        APflag = True
-    elif numpy.linalg.norm(numpy.array([mouseX, mouseY]) - numpy.array([transformed_perigeeCoordinate[0]+SCREENWIDTH//2, transformed_perigeeCoordinate[1]+SCREENHEIGHT//2])) < 20:
-        PEflag = True
-    elif numpy.linalg.norm(numpy.array([mouseX, mouseY]) - numpy.array([transformed_descendingNode[0]+SCREENWIDTH//2, transformed_descendingNode[1]+SCREENHEIGHT//2])) < 20:
-        DNflag = True
-    elif numpy.linalg.norm(numpy.array([mouseX, mouseY]) - numpy.array([transformed_ascendingNode[0]+SCREENWIDTH//2, transformed_ascendingNode[1]+SCREENHEIGHT//2])) < 20:
-        ANflag = True
-
-    if transformed_ascendingNode[2] >= 0:
-        valuesIcon(transformed_ascendingNode, "AN", "green", ANflag, f"Ascending Node = {abs(orbitalInclination)} rad")
-
-    if transformed_descendingNode[2] >= 0:
-        valuesIcon(transformed_descendingNode, "DN", "green", DNflag, f"Descending Node = {-abs(orbitalInclination)} rad")
-
-    if transformed_apogeeCoordinate[2] >= 0:
-        valuesIcon(transformed_apogeeCoordinate, "AP", "aqua", APflag, f"Orbit Apogee = {apogee}km")
-
-    if transformed_perigeeCoordinate[2] >= 0:
-        valuesIcon(transformed_perigeeCoordinate, "PE", "aqua", PEflag, f"Orbit Perigee = {perigee}km")
 
     #EARTH
     pygame.draw.circle(screen, BLACK, (SCREENWIDTH//2, SCREENHEIGHT//2), zoomLevel+50/steps)
@@ -646,22 +612,9 @@ while run:
         orthographicProjection("red", transformed_rocket, radius)
 
     #VALUES (CASE: Behind Earth)
-    if transformed_ascendingNode[2] < 0:
-        valuesIcon(transformed_ascendingNode, "AN", "green", ANflag, f"Ascending Node = {abs(orbitalInclination)} rad")
-
-    if transformed_descendingNode[2] < 0:
-        valuesIcon(transformed_descendingNode, "DN", "green", DNflag, f"Descending Node = {-abs(orbitalInclination)} rad")
-
-    if transformed_apogeeCoordinate[2] < 0:
-        valuesIcon(transformed_apogeeCoordinate, "AP", "aqua", APflag, f"Orbit Apogee = {apogee}km")
-
-    if transformed_perigeeCoordinate[2] < 0:
-        valuesIcon(transformed_perigeeCoordinate, "PE", "aqua", PEflag, f"Orbit Perigee = {perigee}km")
-
 
     GUI(burnChoice, thrust/0.00000304793*100) #Input thrust as %
-    timePeriod = round((2*pi/(numpy.sqrt(G*mass)))*((apogee*1000+perigee*1000)**(3/2))/60, 2)
-    extras(isOrbitComplete, state, apogeeCoordinate, perigeeCoordinate, deltaV, iteration_timeWarp, vector_timeWarp, timePeriod)
+    extras(isOrbitComplete, state, apogeeCoordinate, perigeeCoordinate, deltaV, iteration_timeWarp, vector_timeWarp)
     booted = True
     pygame.display.update()
 pygame.quit()
